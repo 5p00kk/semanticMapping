@@ -1,0 +1,3 @@
+sensor_msgs/Image inputImage
+---
+sensor_msgs/Image maskedImage

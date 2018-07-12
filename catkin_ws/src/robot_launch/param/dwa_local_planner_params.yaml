@@ -1,0 +1,51 @@
+DWAPlannerROS:
+
+# Robot Configuration Parameters - Guidebot
+  max_vel_x: 0.3 # The max linear velocity of the Guidebot, in our case also the max velocity of the motors
+  min_vel_x: 0.0 
+
+  max_vel_y: 0.0  # differential drive robot so no y velocity
+  min_vel_y: 0.0  # differential drive robot so no y velocity
+
+  max_trans_vel: 0.3 #Redundant as it is equal to the max_vel_x
+  min_trans_vel: 0.05  #Minimum speed for the robot to actually move
+  trans_stopped_vel: 0.05
+
+  max_rot_vel: 1.0  # Maximum rotational velocity
+  min_rot_vel: 0.1  # Minimum rotational velocity for it to actually move
+  rot_stopped_vel: 0.1
+  
+  acc_lim_x: 5.0 # Acceleration limits for the robot, set high as the Guidebot is not really limited
+  acc_lim_theta: 5.0
+  acc_lim_y: 0.0 # Cannot move in y-direction
+
+# Goal Tolerance Parameters, somewhat lax as we are not that critical of the position
+  yaw_goal_tolerance: 0.5
+  xy_goal_tolerance: 0.3
+  latch_xy_goal_tolerance: true # Only rotate in place when (x,y) goal is reached
+
+# Forward Simulation Parameters (DWA planner)
+  sim_time: 2.0       # Simulated each velocity 2 seconds into the future
+  vx_samples: 10      # How many samples in the x-velocity
+  vy_samples: 1       # Only one sample in y (y=0)
+  vtheta_samples: 50  # How many samples in the theta-velocity
+# Changes to diamond
+  use_diamond_velocity: true # Use the "diamond" sampling algorithm (robot is limited by the single motor velocity)
+  wheel_base: 0.25    # Wheelbase of the robot
+
+# Trajectory Scoring Parameters
+  path_distance_bias: 64.0      # The weight for following the global plan 
+  goal_distance_bias: 24.0      # The weight for trying to achive the local goal (controls the speed)
+  occdist_scale: 0.5            # The weight fir how much the planner should avoid obstacles
+  forward_point_distance: 0.325 # how far along to place an additional scoring point (default)
+  stop_time_buffer: 0.2         # The amount of time that the robot must stop before a collision in order for a trajectory to be considered valid in seconds. (default)
+  scaling_speed: 0.25           # The absolute value of the veolicty at which to start scaling the robot's footprint, in m/s (Default)
+  max_scaling_factor: 0.2       # The maximum factor to scale the robot's footprint by. (default)
+
+# Oscillation Prevention Parameters
+  oscillation_reset_dist: 0.05  # How far the robot must travel in meters before oscillation flags are reset. (default)
+
+# Debugging
+  publish_traj_pc : true
+  publish_cost_grid_pc: true
+  global_frame_id: odom

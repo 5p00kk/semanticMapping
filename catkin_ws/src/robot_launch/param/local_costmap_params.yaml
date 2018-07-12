@@ -1,0 +1,14 @@
+local_costmap:
+   global_frame: odom
+   robot_base_frame: /base_link
+   update_frequency: 5.0  # Frequency of updating the local costmap
+   publish_frequency: 2.0 # Frequency of publishing the local costmap
+   static_map: false # Should it be created from a static map
+   rolling_window: true # Whether to created af rolling window (it follows the robot)
+   width: 4.0   # Width of the rolling window
+   height: 4.0  # Height of the rolling window
+   resolution: 0.05 # Resolution of the local costmap, might be overwritten by the parent node (move_base)
+   transform_tolerance: 0.5 # The maximum delay there can be in the costmap before it is invalid
+   plugins:
+    - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}

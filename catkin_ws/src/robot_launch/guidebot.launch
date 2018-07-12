@@ -1,0 +1,68 @@
+<launch>
+
+  <remap from="map" to="octomap_grid"/>
+
+  <arg name="odom_frame_id"   default="odom"/>
+  <arg name="base_frame_id"   default="base_link"/>
+  <arg name="global_frame_id" default="map"/>
+  <arg name="odom_topic" default="odom" />
+  <arg name="laser_topic" default="scan" />
+  
+  <arg name="rtabmap_args" default="--delete_db_on_start"/>
+
+  <!-- Guidebot model -->
+  <arg name="model" />
+  <arg name="gui" default="False" />
+  <param name="robot_description" textfile="/home/aut/s160948/catkin_ws/src/robot_launch/urdf/guidebot.urdf" />
+  <param name="use_gui" value="$(arg gui)"/>
+
+  <!-- Last transform between model and Kinect-->
+  <node pkg="tf" type="static_transform_publisher" name="support_to_kinect" args="0 0 0 0 0 0 /camera_link_fake /camera_link 30"/>
+
+  <!-- Publishers -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="param/costmap_common_params.yaml" command="load" ns="local_costmap" />   
+    <rosparam file="param/local_costmap_params.yaml" command="load" />   
+    <rosparam file="param/global_costmap_params.yaml" command="load" />
+    <rosparam file="param/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="param/move_base_params.yaml" command="load" />
+    <rosparam file="param/navfn_global_planner_params.yaml" command="load" />
+    
+    <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <remap from="scan" to="$(arg laser_topic)"/>
+  </node>
+  
+  <!-- SLAM -->
+  <!-- args: "delete_db_on_start" and "udebug" -->
+  <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" args="$(arg rtabmap_args)">
+    <param name="frame_id"           type="string" value="base_link"/>
+    <param name="wait_for_transform" type="bool" value="true"/>
+    
+    <param name="subscribe_depth" type="bool" value="true"/>
+    <param name="RGBD/CreateOccupancyGrid"  type="bool" value="true"/>
+
+    <param name="Grid/MaxGroundHeight" type="double" value="0.1"/>
+
+    <param name="subscribe_scan"  type="bool" value="false"/>
+
+    <remap from="rgb/image"       to="/camera/rgb/image_rect_color"/>
+    <remap from="depth/image"     to="/camera/depth/image_rect"/>
+    <remap from="rgb/camera_info" to="/camera/rgb/camera_info"/>
+  </node>
+    
+  <node name="rviz" pkg="rviz" type="rviz" args="-d /home/aut/s160948/catkin_ws/src/robot_launch/rviz/guidebot.rviz"/>
+
+  <node pkg="image_segmentation" type="image_masking_server.py" name="masking_server" output="screen"/>
+  <node pkg="rtabmap_ros" type="map_assembler" name="map_assembler" output="screen"/>
+  <node pkg="image_segmentation" type="pcl_proc" name="cluster_division" output="screen"/>
+
+</launch>
